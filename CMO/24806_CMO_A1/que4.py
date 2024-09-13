@@ -68,11 +68,15 @@ def golden_section_search(a,b):
 
 def golden_section_search_fibonacci(a,b):
     fib = [1, 1, 2]
+    # T = 100
     T = 100
     for i in range(3, T + 2):
         fib.append(fib[i-1] + fib[i-2])
 
-    rho = 1 - (fib[T] / fib[T + 1])
+    rho = (fib[T] / fib[T + 1])
+    # rho = 1 - (fib[T] / fib[T + 1])
+    # x1 = (1 - rho) * a + rho * b
+    # x2 = rho * a + (1 - rho) * b
     x1 = rho * a + (1 - rho) * b
     x2 = (1 - rho) * a + rho * b
     interval = [a, x1, x2, b]
@@ -98,13 +102,16 @@ def golden_section_search_fibonacci(a,b):
         fx1 = calculate_fx(x1)
         fx2 = calculate_fx(x2)
         if fx1 <= fx2:
+            # x3 = (1 - rho) * a + rho * x2
             x3 = rho * a + (1-rho) * x2
             interval = [a, x3, x1, x2]
         elif fx2 <= fx1:
             x3 = (1-rho) * x1 + rho * b
+            # x3 = rho * x1 + (1 - rho) * b
             interval = [x1, x2, x3, b]
 
-        rho = (1 - fib[T - i]/ fib[T - i + 1])
+        # rho = (1 - fib[T - i]/ fib[T - i + 1])
+        rho = fib[T - i]/ fib[T - i + 1]
         i += 1 
 
     plotx(mp)
