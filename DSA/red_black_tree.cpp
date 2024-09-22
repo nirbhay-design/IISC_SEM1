@@ -171,11 +171,74 @@ class RBTree {
 
     }
 
+    void transplant(node * x, node * y) {
+        if (x->p == NULL) {
+            root = y;
+            return;
+        } 
+        
+        if (x == x->p->l) {
+            x->p->l = y;
+        } else {
+            x->p->r = y;
+        }
+
+        y->p = x->p;
+    }
+
+    node * inorder_successor(node * x) {
+        node * inos = x->r;
+        while (inos->l != NULL) {
+            inos = inos->l;
+        }
+        return inos;
+    }
+
     void cut(int e) {
         // deletion code to be written here;
         // need to write transplant node function
         // find inorder successor
         // detele fixup for red black tree
+        if (root == NULL) {
+            cout << "Tree underflow" << endl;
+            return;
+        }
+
+        node * temp = root;
+        while (temp != NULL && temp->d != e) {
+            if (temp->d > e) {
+                temp = temp->l;
+            } else {
+                temp = temp->r;
+            }
+        }
+
+        if (temp == NULL) {
+            cout << "element " << e << " does not exist in tree" << endl;
+            return; 
+        }
+
+        node * x;
+        
+        if (temp->l == NULL && temp->r == NULL) {
+            if (temp == temp->p->l) {
+                temp->p->l = NULL;
+            } else {
+                temp->p->r = NULL;
+            }
+        }
+
+        else if (temp->l != NULL && temp->r == NULL) {
+            x = temp->l;
+            transplant(temp, temp->l);
+        } else if (temp->l == NULL && temp->r != NULL) {
+            x = temp->r;
+            transplant(temp, temp->r);
+        } else {
+            // inorder successor;
+        }
+
+
     }
 
     void _print_tree(node * temp) {
@@ -212,5 +275,7 @@ int main () {
     rbtree->insert(12);
     rbtree->printTree();
 
+    node * is = rbtree->inorder_successor(rbtree->root->r);
+    cout << is->d << endl;
     return 0;
 }
