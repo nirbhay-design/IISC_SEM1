@@ -171,6 +171,13 @@ class RBTree {
 
     }
 
+    void cut(int e) {
+        // deletion code to be written here;
+        // need to write transplant node function
+        // find inorder successor
+        // detele fixup for red black tree
+    }
+
     void _print_tree(node * temp) {
         if (temp != NULL) {
             cout << "(" << temp->d << " " << (temp->c ? "B":"R") << ") ";
