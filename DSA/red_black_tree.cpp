@@ -235,7 +235,7 @@ class RBTree {
             x = temp->r;
             transplant(temp, temp->r);
         } else {
-            // inorder successor;
+            node * inos = inorder_successor(temp);
         }
 
 
