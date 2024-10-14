@@ -64,12 +64,14 @@ def ConstantGradientDescent(fun, alpha, initialx):
         fxvals.append(fx)
     return {"f": fxvals, "a": alpha, 'x': x}
 
-def NewtonMethod(fun, initialx):
+def NewtonMethod(fun, initialx, scale=False):
     x = initialx
     fxvals = []
     for i in range(100):
         fx = fun(x, sr, 0)
         u = fun(x, sr, 2)
+        if scale:
+            u = u / 1e6
         x = x - u
         fxvals.append(fx)
     return {"f": fxvals, 'x': x}
@@ -89,28 +91,20 @@ def GDNewton(fun, alpha, initialx, K):
         fxvals.append(fx)
     return {"f": fxvals, "a": alpha, "K":K, 'x': x}
 
-def GDNewtonInterleve(fun, alpha, initialx, K):
-    x = initialx
-    fxvals = []
-    for i in range(1, 101):
-        fx = fun(x, sr, 0)
-        if i % K == 0:
-            u = fun(x, sr, 2)
-            x = x - u
-        else:
-            gradfx = fun(x, sr, 1)
-            x = x - alpha * gradfx
-        fxvals.append(fx)
-    return {"f": fxvals, "a": alpha, "K":K, 'x': x}
-
-def quasiNewtonConstStep(fun, alpha, initialx):
+def quasiNewtonELS(fun, initialx):
     x = initialx
     G = np.eye(x.shape[0])
     g = fun(x, sr, 1)
     fvals = []
-    for i in range(100):
+    b = fun(np.zeros(x.shape[0]), sr, 1)
+    T = 0
+    while True:
+        T += 1
+        if np.linalg.norm(g) < 1e-3:
+            break;
         fvals.append(fun(x, sr, 0))
         u = -np.dot(G, g)
+        alpha = -np.dot(g, u) / (2 * (fun(u, sr, 0) - np.dot(b, u)))
         delta = alpha * u
         x = x + delta
         gnew = fun(x, sr, 1)
@@ -118,23 +112,27 @@ def quasiNewtonConstStep(fun, alpha, initialx):
         term = delta - np.dot(G, gamma) 
         G = G + np.dot(term.reshape(-1,1), term.reshape(-1,1).T) / np.dot(term, gamma)
         g = gnew
-    return {'f': fvals, 'x': x, 'a': alpha}
+    return {'f': fvals, 'x': x, 'T':T}
 
-def quasiNewtonId(fun, alpha, initialx):
+def quasiNewtonIdELS(fun, initialx):
     x = initialx
     G = np.eye(x.shape[0])
     g = fun(x, sr, 1)
     fvals = []
-    for i in range(100):
+    b = fun(np.zeros(x.shape[0]), sr, 1)
+    for i in range(100): 
+        # if np.linalg.norm(g) < 1e-3:
+        #     break;
         fvals.append(fun(x, sr, 0))
         u = -np.dot(G, g)
+        alpha = -np.dot(g, u) / (2 * (fun(-u, sr, 0) - np.dot(b, -u)))
         delta = alpha * u
         x = x + delta
         gnew = fun(x, sr, 1)
         gamma = gnew - g
         G = (np.dot(delta, delta) / np.dot(delta, gamma)) * np.eye(x.shape[0])
         g = gnew
-    return {'f': fvals, 'x': x, 'a': alpha}
+    return {'f': fvals, 'x': x}
 
 def que1():
     A, b = f1(sr, True)
@@ -229,11 +227,14 @@ def que3():
     # print(f"min f(x): {min(out2['f']):.3f}")
 
 
+    # out = NewtonMethod(f3, x0, scale=True)
     out = NewtonMethod(f3, x0)
 
     print("#### Que-3.2 ####")
     print(f"f(x) values for Newton")
     print(out['f'][:10])
+    # print(f"f(x) values for Newton (alpha = 1e-6)")
+    # print([round(i, 3) for i in out['f'][:10]])
 
     alphas = [0.01, 0.02, 0.1, 0.2]
     Ks = [60, 80, 85, 90, 100]
@@ -281,21 +282,16 @@ def que4():
         outs.append(out)
     plot_values(outs)
 
-    outs = []
     print("#### Quasi Newton Rank 1 ####")
-    for alpha in alphas:
-        out = quasiNewtonConstStep(f2, alpha, np.zeros(5))
-        outs.append(out)
-        print(f"alpha: {out['a']} x*: {out['x']}")
-    plot_values(outs)
+    out = quasiNewtonELS(f2, np.zeros(5))
+    print(f"Quasi Newton (alpha = Exact Line Search) x*: {out['x']}")
+    plot_values([out])
 
-    outs = []
+
     print("#### Quasi Newton scaler multiple of Identity ####")
-    for alpha in alphas:
-        out = quasiNewtonId(f2, alpha, np.zeros(5))
-        print(f"alpha: {out['a']} x*: {out['x']}")
-        outs.append(out)
-    plot_values(outs)
+    out = quasiNewtonIdELS(f2, np.zeros(5))
+    print(f"Quasi Newton (alpha = Exact Line Search) x*: {[round(i, 3) for i in out['x']]}")
+    plot_values([out])
 
 
 if __name__ == "__main__":
@@ -310,17 +306,14 @@ if __name__ == "__main__":
     run_map[f'q{que}']()
 
 """
-def quasiNewtonELS(fun, initialx):
+def quasiNewtonConstStep(fun, alpha, initialx):
     x = initialx
     G = np.eye(x.shape[0])
     g = fun(x, sr, 1)
     fvals = []
-    b = fun(x, sr, 1)
     for i in range(100):
         fvals.append(fun(x, sr, 0))
         u = -np.dot(G, g)
-        alpha = -np.dot(g, u) / 2 * (fun(u, sr, 0) - np.dot(b, u))
-        print(alpha)
         delta = alpha * u
         x = x + delta
         gnew = fun(x, sr, 1)
@@ -329,4 +322,36 @@ def quasiNewtonELS(fun, initialx):
         G = G + np.dot(term.reshape(-1,1), term.reshape(-1,1).T) / np.dot(term, gamma)
         g = gnew
     return {'f': fvals, 'x': x, 'a': alpha}
+
+def quasiNewtonId(fun, alpha, initialx):
+    x = initialx
+    G = np.eye(x.shape[0])
+    g = fun(x, sr, 1)
+    fvals = []
+    for i in range(100):
+        fvals.append(fun(x, sr, 0))
+        u = -np.dot(G, g)
+        delta = alpha * u
+        x = x + delta
+        gnew = fun(x, sr, 1)
+        gamma = gnew - g
+        G = (np.dot(delta, delta) / np.dot(delta, gamma)) * np.eye(x.shape[0])
+        g = gnew
+    return {'f': fvals, 'x': x, 'a': alpha}
+
+    # outs = []
+    # print("#### Quasi Newton Rank 1 ####")
+    # for alpha in alphas:
+    #     out = quasiNewtonConstStep(f2, alpha, np.zeros(5))
+    #     outs.append(out)
+    #     print(f"alpha: {out['a']} x*: {out['x']}")
+    # plot_values(outs)
+
+    # outs = []
+    # print("#### Quasi Newton scaler multiple of Identity ####")
+    # for alpha in alphas:
+    #     out = quasiNewtonId(f2, alpha, np.zeros(5))
+    #     print(f"alpha: {out['a']} x*: {out['x']}")
+    #     outs.append(out)
+    # plot_values(outs)
 """
