@@ -1,9 +1,9 @@
-from oracles import f1, f2, f3
+from oracles_updated import f1, f2, f3
 import numpy as np 
 import matplotlib.pyplot as plt 
 import warnings; warnings.filterwarnings("ignore")
 
-sr = 24806
+sr = 24016
 
 def gradf(A, x, b):
     return np.dot(A,x) - b
@@ -246,6 +246,7 @@ def que3():
         for alpha in alphas:
             cgdnewton = GDNewton(f3, alpha, x0, K)
             cgdnewton['mnf'] = min(cgdnewton['f'])
+            cgdnewton['cost'] = K * 1 + (100 - K) * 25
             out_alpha.append(cgdnewton)
         plot_values(out_alpha, f"K: {K} alpha", ylim=[0,30], newton=True)
         all_k_alpha_fx.extend(out_alpha)
@@ -264,13 +265,17 @@ def que3():
     #     all_k_alpha_fx.extend(out_alpha)
 
     min_f = all_k_alpha_fx[0]['mnf']
+    min_cst = all_k_alpha_fx[0]['cost']
     min_out = all_k_alpha_fx[0]
     for out_f in all_k_alpha_fx[1:]:
         if min_f > out_f['mnf']:
             min_f = out_f['mnf']
             min_out = out_f 
+        elif min_out['mnf'] == out_f['mnf']:
+            if out_f['cost'] < min_out['cost']:
+                min_out = out_f 
     print("#### Que-3.4 ####")
-    print(f"min f(x): {min_out['mnf']:.3f}, K: {min_out['K']}, alpha:: {min_out['a']}")    
+    print(f"min f(x): {min_out['mnf']:.3f}, K: {min_out['K']}, alpha:: {min_out['a']}, cost: {min_out['cost']}")    
 
 def que4():
     alphas = [1e-1, 2e-1, 1e-2, 3e-2, 1e-3]
