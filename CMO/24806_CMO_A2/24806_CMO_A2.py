@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import warnings; warnings.filterwarnings("ignore")
 
-sr = 24016
+sr = 24806
 
 def gradf(A, x, b):
     return np.dot(A,x) - b
