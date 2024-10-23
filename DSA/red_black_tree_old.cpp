@@ -12,23 +12,22 @@ class node{
         node * r;
         int d;
         int c;
-        node (int data, int color = R) {
+        node (int data) {
             p = NULL;
             l = NULL;
             r = NULL;
             d = data;
-            c = color;
+            c = R;
         }
 };
 
 class RBTree {
 
     public:
-    node * nil = new node(INT_MIN, B);
-    node * root = nil;
+    node * root = NULL;
 
     void _search(node * temp, int x) {
-        if (temp == nil) {
+        if (temp == NULL) {
             cout << "element not found" << endl;
             return;
         }
@@ -50,13 +49,13 @@ class RBTree {
     }
 
     void _rb_insert_fixup(node * z) {
-        while (z->p != NULL && z->p->c == R) {
+        while (z != NULL && z->p != NULL && z->p->c == R) {
             if (z->p == z->p->p->l) {
                 node * y = z->p->p->r;
-                if (y->c == R) {
+                if (y != NULL && y->c == R) {
                     z->p->c = B;
                     z->p->p->c = R;
-                    y->c = B;
+                    if (y != NULL) y->c = B;
                     z = z->p->p;
                 } else {
                     if (z == z->p->r) {
@@ -69,10 +68,10 @@ class RBTree {
                 }
             } else {
                 node * y = z->p->p->l;
-                if (y->c == R) {
+                if (y != NULL && y->c == R) {
                     z->p->c = B;
                     z->p->p->c = R;
-                    y->c = B;
+                    if (y != NULL) y->c = B;
                     z = z->p->p;
                 } else {
                     if (z == z->p->l) {
@@ -91,18 +90,16 @@ class RBTree {
     void insert(int e) {
         node * temp = root;
         node * new_node = new node(e);
-        new_node->l = nil;
-        new_node->r = nil;
 
-        if (temp == nil) { // root is null
+        if (temp == NULL) { // root is null
             root = new_node;
             root->c = B;
             return;
         }
 
-        while (temp != nil) {
+        while (temp != NULL) {
             if (temp->d > e) {
-                if (temp->l == nil) {
+                if (temp->l == NULL) {
                     new_node->p = temp;
                     temp->l = new_node;
                     break;
@@ -110,7 +107,7 @@ class RBTree {
                 temp = temp->l;
             }
             else {
-                if (temp->r == nil) {
+                if (temp->r == NULL) {
                     new_node->p = temp;
                     temp->r = new_node;
                     break;
@@ -118,7 +115,6 @@ class RBTree {
                 temp = temp->r;
             }
         }
-
         if (new_node->p->c == R) { 
             _rb_insert_fixup(new_node);
         }
@@ -131,7 +127,7 @@ class RBTree {
         y->l = x;
         x->r = yl;
 
-        if (yl != nil) {
+        if (yl != NULL) {
             yl->p = x;
         }
 
@@ -156,7 +152,7 @@ class RBTree {
         y->r = x;
         x->l = yr;
 
-        if (yr != nil) {
+        if (yr != NULL) {
             yr->p = x;
         }
 
@@ -178,7 +174,6 @@ class RBTree {
     void transplant(node * x, node * y) {
         if (x->p == NULL) {
             root = y;
-            y->p = NULL;
             return;
         } 
         
@@ -193,7 +188,7 @@ class RBTree {
 
     node * inorder_successor(node * x) {
         node * inos = x->r;
-        while (inos->l != nil) {
+        while (inos->l != NULL) {
             inos = inos->l;
         }
         return inos;
@@ -204,13 +199,13 @@ class RBTree {
         // need to write transplant node function -> Done
         // find inorder successor -> Done
         // detele fixup for red black tree
-        if (root == nil) {
+        if (root == NULL) {
             cout << "Tree underflow" << endl;
             return;
         }
 
         node * temp = root;
-        while (temp != nil && temp->d != e) {
+        while (temp != NULL && temp->d != e) {
             if (temp->d > e) {
                 temp = temp->l;
             } else {
@@ -218,104 +213,38 @@ class RBTree {
             }
         }
 
-        if (temp == nil) {
+        if (temp == NULL) {
             cout << "element " << e << " does not exist in tree" << endl;
             return; 
         }
 
         node * x;
-        int oc = temp->c; // color of cur node to be deleted;
+        int cur_color = temp->c; // color of cur node to be deleted;
+        
+        if (temp->l == NULL && temp->r == NULL) {
+            if (temp == temp->p->l) {
+                temp->p->l = NULL;
+            } else {
+                temp->p->r = NULL;
+            }
+        }
 
-        if (temp->l == nil) {
-            x = temp->r;
-            transplant(temp, temp->r);
-        } else if (temp->r == nil) {
+        else if (temp->l != NULL && temp->r == NULL) {
             x = temp->l;
             transplant(temp, temp->l);
+        } else if (temp->l == NULL && temp->r != NULL) {
+            x = temp->r;
+            transplant(temp, temp->r);
         } else {
             node * inos = inorder_successor(temp);
-            oc = inos->c;
-            x = inos->r;
-            if (inos != temp->r) {
-                transplant(inos, inos->r);
-                inos->r = temp->r;
-                inos->r->p = temp;
-            } else {
-                x->p = inos;
-            }
-            transplant(temp, inos);
-            inos->l = temp->l;
-            inos->l->p = inos;
-            inos->c = temp->c;
-        }
-        printTree();
-        cout << "calling delete fixup" << endl;
-        if (oc == B){
-            _rb_delete_fixup(x);
+            // replace temp with inos;
         }
 
-    }
-
-    void _rb_delete_fixup(node * x) {
-        cout << x->d << endl;
-        while (x != root && x->c == B) {
-            if (x == x->p->l) {
-                node * w  = x->p->r;
-                if (w->c == R) {
-                    w->c = B;
-                    x->p->c = R;
-                    leftRotate(x->p);
-                    w = x->p->r;
-                }
-                if (w->l->c == B && w->r->c == B) {
-                    w->c = R;
-                    x = x->p;
-                } else {
-                    if (w->r->c == B) {
-                        w->l->c = B;
-                        w->c = R;
-                        rightRotate(w);
-                        w = x->p->r;
-                    }
-                    w->c = x->p->c;
-                    x->p->c = B;
-                    w->r->c = B;
-                    leftRotate(x->p);
-                    x=root;
-                }
-            } else {
-                node * w  = x->p->l;
-                if (w->c == R) {
-                    w->c = B;
-                    x->p->c = R;
-                    rightRotate(x->p);
-                    w = x->p->l;
-                }
-                if (w->l->c == B && w->r->c == B) {
-                    w->c = R;
-                    x = x->p;
-                } else {
-                    if (w->l->c == B) {
-                        w->r->c = B;
-                        w->c = R;
-                        leftRotate(w);
-                        w = x->p->l;
-                    }
-                    w->c = x->p->c;
-                    x->p->c = B;
-                    w->l->c = B;
-                    rightRotate(x->p);
-                    x=root;
-                }
-            }
-        }
-        x->c = B;
     }
 
     void _print_tree(node * temp) {
         if (temp != NULL) {
-            // if (temp->d == INT_MIN) cout << " NIL ";
-            if (temp->d != INT_MIN) cout << "(" << temp->d << " " << (temp->c ? "B":"R") << ") ";
+            cout << "(" << temp->d << " " << (temp->c ? "B":"R") << ") ";
             _print_tree(temp->l);
             _print_tree(temp->r);
         }
@@ -332,20 +261,11 @@ int main () {
     RBTree * rbtree = new RBTree();
 
     while (true){
-        cout << "Delete [0] / Insert [1]: ";
-        int decide, e; cin >> decide;
-        if (decide) {
-            cout << "enter element to insert: ";
-            cin >> e;
-            rbtree->insert(e);
-            rbtree->printTree();
-        } else {
-            cout << "enter element to delete: ";
-            cin >> e;
-            rbtree->cut(e);
-            rbtree->printTree();
-        }
-        
+        cout << "enter element to insert: ";
+        int e;
+        cin >> e;
+        rbtree->insert(e);
+        rbtree->printTree();
     }
     // rbtree->insert(34);
     // rbtree->printTree();
