@@ -248,8 +248,8 @@ class RBTree {
             inos->l->p = inos;
             inos->c = temp->c;
         }
-        printTree();
-        cout << "calling delete fixup" << endl;
+        // printTree();
+        // cout << "calling delete fixup" << endl;
         if (oc == B){
             _rb_delete_fixup(x);
         }
