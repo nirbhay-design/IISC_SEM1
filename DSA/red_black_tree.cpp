@@ -238,7 +238,7 @@ class RBTree {
             if (inos != temp->r) {
                 transplant(inos, inos->r);
                 inos->r = temp->r;
-                inos->r->p = temp;
+                inos->r->p = inos;
             } else {
                 x->p = inos;
             }
