@@ -12,7 +12,7 @@ class node{
         node * r;
         int d;
         int c;
-        node (int data, int color = R) {
+        node (int data, int color = R) { // node constructor 
             p = NULL;
             l = NULL;
             r = NULL;
@@ -24,10 +24,10 @@ class node{
 class RBTree {
 
     public:
-    node * nil = new node(INT_MIN, B);
-    node * root = nil;
+    node * nil = new node(INT_MIN, B); // initializing nil node
+    node * root = nil; // root node 
 
-    void _search(node * temp, int x) {
+    void _search(node * temp, int x) { // search function 
         if (temp == nil) {
             cout << "element not found" << endl;
             return;
@@ -49,26 +49,26 @@ class RBTree {
         return _search(temp, x);
     }
 
-    void _rb_insert_fixup(node * z) {
+    void _rb_insert_fixup(node * z) { // fixup code for red black tree insertion
         while (z->p != NULL && z->p->c == R) {
             if (z->p == z->p->p->l) {
                 node * y = z->p->p->r;
-                if (y->c == R) {
+                if (y->c == R) { // case 1
                     z->p->c = B;
                     z->p->p->c = R;
                     y->c = B;
                     z = z->p->p;
                 } else {
-                    if (z == z->p->r) {
+                    if (z == z->p->r) { // case 2
                         z = z->p;
                         leftRotate(z);
                     }
-                    z->p->c = B;
+                    z->p->c = B; // case 3
                     z->p->p->c = R;
                     rightRotate(z->p->p);
                 }
             } else {
-                node * y = z->p->p->l;
+                node * y = z->p->p->l; // these are mirror image cases of prev ones
                 if (y->c == R) {
                     z->p->c = B;
                     z->p->p->c = R;
@@ -88,19 +88,19 @@ class RBTree {
         root->c = B;
     }
 
-    void insert(int e) {
+    void insert(int e) { // insertion code for Red Black Tree
         node * temp = root;
         node * new_node = new node(e);
         new_node->l = nil;
         new_node->r = nil;
 
-        if (temp == nil) { // root is null
+        if (temp == nil) { // root is nil
             root = new_node;
             root->c = B;
             return;
         }
 
-        while (temp != nil) {
+        while (temp != nil) { // finding the position to insert
             if (temp->d > e) {
                 if (temp->l == nil) {
                     new_node->p = temp;
@@ -119,12 +119,12 @@ class RBTree {
             }
         }
 
-        if (new_node->p->c == R) { 
+        if (new_node->p->c == R) { // fixup if node's parent color is Red
             _rb_insert_fixup(new_node);
         }
     }
 
-    void leftRotate(node * x) {
+    void leftRotate(node * x) { // left rotate 
         node * y = x->r;
         node * yl = y->l;
 
@@ -149,7 +149,7 @@ class RBTree {
         x->p = y;
     }
 
-    void rightRotate(node * x) {
+    void rightRotate(node * x) { // right rotate
         node * y = x->l;
         node * yr = y->r;
 
@@ -175,8 +175,8 @@ class RBTree {
 
     }
 
-    void transplant(node * x, node * y) {
-        if (x->p == NULL) {
+    void transplant(node * x, node * y) { // transplant function 
+        if (x->p == NULL) { // checking parent is NULL 
             root = y;
             y->p = NULL;
             return;
@@ -188,10 +188,10 @@ class RBTree {
             x->p->r = y;
         }
 
-        y->p = x->p;
+        y->p = x->p; // linking x->p to y
     }
 
-    node * inorder_successor(node * x) {
+    node * inorder_successor(node * x) { // finding the inorder successor of a node
         node * inos = x->r;
         while (inos->l != nil) {
             inos = inos->l;
@@ -199,12 +199,11 @@ class RBTree {
         return inos;
     }
 
-    void cut(int e) {
-        // deletion code to be written here;
+    void cut(int e) { // deletion code 
         // need to write transplant node function -> Done
         // find inorder successor -> Done
-        // detele fixup for red black tree
-        if (root == nil) {
+        // detele fixup for red black tree -> Done
+        if (root == nil) { // checking if root is nil
             cout << "Tree underflow" << endl;
             return;
         }
@@ -218,7 +217,7 @@ class RBTree {
             }
         }
 
-        if (temp == nil) {
+        if (temp == nil) { // checking if element exist
             cout << "element " << e << " does not exist in tree" << endl;
             return; 
         }
@@ -226,13 +225,13 @@ class RBTree {
         node * x;
         int oc = temp->c; // color of cur node to be deleted;
 
-        if (temp->l == nil) {
+        if (temp->l == nil) { // case 1
             x = temp->r;
             transplant(temp, temp->r);
-        } else if (temp->r == nil) {
+        } else if (temp->r == nil) { // case 2
             x = temp->l;
             transplant(temp, temp->l);
-        } else {
+        } else { // case 3
             node * inos = inorder_successor(temp);
             oc = inos->c;
             x = inos->r;
@@ -250,41 +249,40 @@ class RBTree {
         }
         // printTree();
         // cout << "calling delete fixup" << endl;
-        if (oc == B){
+        if (oc == B){ // calling fixup if color was Black
             _rb_delete_fixup(x);
         }
 
     }
 
     void _rb_delete_fixup(node * x) {
-        cout << x->d << endl;
         while (x != root && x->c == B) {
             if (x == x->p->l) {
-                node * w  = x->p->r;
-                if (w->c == R) {
+                node * w  = x->p->r; // sibling
+                if (w->c == R) { // case 1
                     w->c = B;
                     x->p->c = R;
                     leftRotate(x->p);
                     w = x->p->r;
                 }
-                if (w->l->c == B && w->r->c == B) {
+                if (w->l->c == B && w->r->c == B) { // case 2
                     w->c = R;
                     x = x->p;
                 } else {
-                    if (w->r->c == B) {
+                    if (w->r->c == B) { // case 3
                         w->l->c = B;
                         w->c = R;
                         rightRotate(w);
                         w = x->p->r;
                     }
-                    w->c = x->p->c;
+                    w->c = x->p->c; // case 4
                     x->p->c = B;
                     w->r->c = B;
                     leftRotate(x->p);
                     x=root;
                 }
             } else {
-                node * w  = x->p->l;
+                node * w  = x->p->l; // mirror image of above cases
                 if (w->c == R) {
                     w->c = B;
                     x->p->c = R;
@@ -312,7 +310,7 @@ class RBTree {
         x->c = B;
     }
 
-    void _print_tree(node * temp) {
+    void _print_tree(node * temp) { // printing preorder of the tree
         if (temp != NULL) {
             // if (temp->d == INT_MIN) cout << " NIL ";
             if (temp->d != INT_MIN) cout << "(" << temp->d << " " << (temp->c ? "B":"R") << ") ";
