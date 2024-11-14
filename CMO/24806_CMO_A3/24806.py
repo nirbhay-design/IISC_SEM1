@@ -5,8 +5,6 @@ import cvxpy as cp
 import os
 import warnings; warnings.filterwarnings("ignore")
 
-os.environ['CVXPY_DISABLE_DCP_CHECK'] = '1'
-
 def projection(A, b, z):
     # z and b both are (n, 1)
     return z + np.dot((A.T @ np.linalg.inv(A @ A.T)), (b - np.dot(A,z)))
@@ -43,25 +41,28 @@ def read_csv(data, label):
     return np.array(d), np.array(l)
 
 def plot_points(data, label, w, b, ac):
-    color_map = {}
-
+    e,f,g,h = 1,1,1,1
     for i, l in enumerate(label):
         if i in ac:
             if l == 1:
-                plt.scatter(data[i,0], data[i,1], label='y=1', color='r')
+                plt.scatter(data[i,0], data[i,1], label='y=1' if e else None, color='r')
+                e = 0
             else:
-                plt.scatter(data[i,0], data[i,1], label='y=-1', marker='s', color='r')
+                plt.scatter(data[i,0], data[i,1], label='y=-1' if f else None, marker='s', color='r')
+                f = 0
         else:
             if l == 1:
-                plt.scatter(data[i,0], data[i,1], label='y=1', color='b')
+                plt.scatter(data[i,0], data[i,1], label='y=1' if g else None, color='b')
+                g = 0
             else:
-                plt.scatter(data[i,0], data[i,1], label='y=-1', marker='s', color='g')
+                plt.scatter(data[i,0], data[i,1], label='y=-1' if h else None, marker='s', color='g')
+                h = 0
     x1 = np.arange(-3,3,0.1)
     x2 = -(b + w[0] * x1) / w[1]
     plt.plot(x1,x2, label='w^Tx + b', c = 'black')      
     plt.xlabel("x1")
     plt.ylabel("x2")      
-    # plt.legend()
+    plt.legend()
     plt.show()
     
 def dual_solve(data, labels):
